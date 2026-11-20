@@ -24,7 +24,3 @@ credentials*
 *.local.yml
 *.local.json
 *.local.env
-k8s/secret.yaml
-k8s/secret.*.yaml
-!k8s/secret.sample.yaml
-k8s/configmap.yaml
