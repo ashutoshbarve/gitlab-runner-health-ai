@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-health-agent-config
+  namespace: runner-health-agent
+data:
+  # Copy to configmap.yaml (gitignored), then configure your environment.
+  # Keep internal addresses and real project/group IDs out of this template.
+  GITLAB_URL: "https://gitlab.com"
+  GITLAB_RUNNER_SCOPE: "group"
+  GITLAB_GROUP_IDS: ""
+  GITLAB_PROJECT_IDS: ""
+
+  POLL_INTERVAL_MINUTES: "5"
+  STALE_THRESHOLD_MINUTES: "15"
+  FAILURE_LOOKBACK_HOURS: "24"
+  HEALTH_SCORE_ALERT_THRESHOLD: "70"
+
+  # Phase 2 - AI Reasoning Engine. AI_API_KEY lives in the Secret, not here.
+  AI_REASONING_ENABLED: "true"
+  AI_PROVIDER: "openai_compatible"
+  AI_API_URL: ""
+  AI_MODEL: "gemma-27b-it-w4a16"
+  AI_FALLBACK_MODELS: "llama-3.3-70b,gpt-oss-120b"
+  AI_REQUEST_TIMEOUT_SECONDS: "60"
+  LOG_EXCERPT_MAX_CHARS: "4000"
+  AI_AGENTIC_TOOLS_ENABLED: "true"
+  AI_AGENTIC_MAX_TOOL_ITERATIONS: "4"
+  TREND_WINDOW_DAYS: "7"
+  RECURRENCE_ALERT_THRESHOLD: "3"
+
+  # Pinned to the PVC mount path regardless of anything else, so data
+  # survives pod restarts/recreation.
+  DATABASE_URL: "sqlite:////app/data/runner_health.db"

@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runner-health-agent
+  namespace: runner-health-agent
+  labels:
+    app: runner-health-agent
+spec:
+  replicas: 1
+  # SQLite + a single ReadWriteOnce volume can't be safely shared by two pods
+  # at once, so force full stop-then-start on updates rather than a rolling
+  # deploy with overlapping pods.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: runner-health-agent
+  template:
+    metadata:
+      labels:
+        app: runner-health-agent
+    spec:
+      containers:
+        - name: runner-health-agent
+          # Replace with your actual registry/image once built & pushed
+          # there, e.g. <account>.dkr.ecr.<region>.amazonaws.com/runner-health-agent:latest
+          # for an EKS cluster, or your org's approved registry for local
+          # Docker-Desktop Kubernetes testing (Registry Access Management
+          # policies on managed machines commonly block ad-hoc/local
+          # registries - push to an approved one instead).
+          image: runner-health-agent:v1
+          # Imported directly into the node's containerd store (no registry
+          # involved) - see k8s/README notes. Never means "use exactly what
+          # was loaded locally, don't attempt any network pull."
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: runner-health-agent-config
+            - secretRef:
+                name: runner-health-agent-secrets
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: runner-health-agent-data

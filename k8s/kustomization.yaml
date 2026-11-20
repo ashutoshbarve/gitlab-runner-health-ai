@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: runner-health-agent
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  # configmap.yaml is private and gitignored. Copy configmap.sample.yaml
+  # to configmap.yaml and configure it before applying this kustomization.
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  - secret.yaml
+  # secret.yaml is gitignored (see .gitignore) and NOT committed - copy
+  # secret.sample.yaml to secret.yaml once, fill in your real values, and
+  # every subsequent `kubectl apply -k k8s/` deploys everything together,
+  # including the secret, in one shot.
